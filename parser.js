@@ -2,46 +2,43 @@ const fs = require('fs');
 
 class ScssTransformer {
   fileContent = '';
-  openBracketArray = [];
-  closeBracketArray = [];
   scssContent = [];
 
   constructor(fileContent) {
     this.fileContent = fileContent;
     this.getBracketPositions(fileContent);
-    this.scssContent = this.getScssContent();
+    // this.scssContent = this.getScssContent();
     console.log(this.scssContent);
   }
 
-  getScssContent() {
-    if (this.openBracketArray.length !== this.closeBracketArray.length) {
-      throw new Error('Invalid SCSS file content!');
-    }
-    return this.openBracketArray.map((item, index) => {
-      const selector = this.getSelector(index);
-      const value = this.getScssValue(index);
-      return {
-        selector,
-        value,
-      }
-    })
+  // getScssContent() {
+  //   if (this.openBracketArray.length !== this.closeBracketArray.length) {
+  //     throw new Error('Invalid SCSS file content!');
+  //   }
+  //   return this.openBracketArray.map((item, index) => {
+  //     const selector = this.getSelector(index);
+  //     const value = this.getScssValue(index);
+  //     return {
+  //       selector,
+  //       value,
+  //     }
+  //   })
+  // }
+
+  getSelector(openBracketIndex, closeBracketIndex) {
+    return this.fileContent.slice(closeBracketIndex + 1, openBracketIndex).trim();
   }
 
-  getSelector(index) {
-    const startSelector = index ? this.closeBracketArray[index - 1] + 1 : 0;
-    const finishSelector = this.openBracketArray[index];
-    return this.fileContent.slice(startSelector, finishSelector).trim();
-  }
-
-  getScssValue(index) {
-    const startSelector = this.openBracketArray[index] + 1;
-    const finishSelector = this.closeBracketArray[index];
-    return this.fileContent.slice(startSelector, finishSelector);
+  getScssValue(openBracketIndex, closeBracketIndex) {
+    return this.fileContent.slice(openBracketIndex + 1, closeBracketIndex);
   }
 
   getBracketPositions(content) {
     let parentLevel = 0;
     let isSelectorWithSeveralAmpersand = false;
+    let openBracketIndex = 0;
+    let closeBracketIndex = 0;
+    let selector = '';
 
     for (let i = 0; i < content.length; i++) {
       const letter = content[i];
@@ -50,14 +47,13 @@ class ScssTransformer {
       const hasCloseBracket = letter === '}';
       const hasParent = parentLevel !== 0;
 
-
       if (hasAmpersand && !isSelectorWithSeveralAmpersand) {
         parentLevel++;
         isSelectorWithSeveralAmpersand = true;
         continue;
       }
       if (hasOpenBracket && isSelectorWithSeveralAmpersand) {      
-        isSelectorWithSeveralAmpersand = false;
+        isSelectorWithSeveralAmpersand = false;        
         continue;
       }
       if (hasCloseBracket && hasParent) {
@@ -68,11 +64,17 @@ class ScssTransformer {
         continue;
       }
       if (hasOpenBracket) {
-        this.openBracketArray.push(i);
+        openBracketIndex = i;        
+        selector = this.getSelector(openBracketIndex, closeBracketIndex);
         continue;
       } 
       if (hasCloseBracket) {
-        this.closeBracketArray.push(i);
+        closeBracketIndex = i;
+        const value = this.getScssValue(openBracketIndex, closeBracketIndex);
+        this.scssContent.push({
+          selector,
+          value,
+        });
         continue;
       }
     }
