@@ -8,12 +8,12 @@ class ScssTransformer {
 
   constructor(fileContent) {
     this.fileContent = fileContent;
-    this.getBracketsPositions(fileContent);
-    
-    console.log(this.getScssObject())
+    this.getBracketPositions(fileContent);
+    this.scssContent = this.getScssContent();
+    console.log(this.scssContent);
   }
 
-  getScssObject() {
+  getScssContent() {
     if (this.openBracketArray.length !== this.closeBracketArray.length) {
       throw new Error('Invalid SCSS file content!');
     }
@@ -39,7 +39,7 @@ class ScssTransformer {
     return this.fileContent.slice(startSelector, finishSelector);
   }
 
-  getBracketsPositions(content) {
+  getBracketPositions(content) {
     let parentLevel = 0;
     let isSelectorWithSeveralAmpersand = false;
 
@@ -49,7 +49,7 @@ class ScssTransformer {
       const hasOpenBracket = letter === '{';
       const hasCloseBracket = letter === '}';
       const hasParent = parentLevel !== 0;
-      
+
 
       if (hasAmpersand && !isSelectorWithSeveralAmpersand) {
         parentLevel++;
