@@ -13,18 +13,12 @@ const getFlagValue = (flagNameList, defaultValue = null) => {
   return defaultValue;
 }
 
-// const getFileList = flagNameList => {
-//   const flagValue = getFlagValue(flagNameList);
-//   const valueWithoutSpace = flagValue.replace(/\s/ig, "");
-//   const fileArray = valueWithoutSpace.split(',');
-//   return fileArray;
-// }
-
 const flagValues = {
   prefix: getFlagValue(['--prefix', '-p']),
   elementSeporator: getFlagValue(['--elementSeporator', '-e'], '__'),
   modifierSeporator: getFlagValue(['--modifierSeporator', '-m'], '_'),
   filePathList: getFlagValue(['--file', '-f']),
+  deep: Number(getFlagValue(['--deep', '-d'])) || 5,
 };
 
 module.exports = flagValues;

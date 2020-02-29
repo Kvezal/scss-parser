@@ -1,66 +1,57 @@
 const fs = require('fs');
 
+const scssRegExps = {
+  selector: '[\\w-,.:\\s()]*',
+  property: '[\\w-:\\s;\'"%()]*',
+};
+
+let selectDeep;
+
 function getScssList(fileContent) {
   const scssRegExp = getRegExp();
-  const scssList = fileContent.match(scssRegExp)
-    .map(scss => ({
+  const scssListMatches = fileContent.match(scssRegExp);
+  if (scssListMatches === null) {
+    return null;
+  }
+  const scssList = scssListMatches.map(scss => {
+    const value = {
       fileName: getSelector(scss),
       fileContent: scss,
-    }));
+      children: null,
+    };
+    if (scss.search('&') !== -1) {
+      let content = value.fileContent.replace(value.fileName, '');
+      content = content.slice(1, content.length - 1).trim().replace('^;', '');
+      value.children = getScssList(content);
+    }
+    return value;
+  });
   return scssList;
 }
 
 function getSelector(scss) {
-  return scss.match(/[a-z-_:0-9.,\s]*/i)[0];
+  const preparedScss = scss.replace(/[;\s]*/ig, '');
+  const selectorRegExp = new RegExp(`&?${scssRegExps.selector}`, 'i');
+  return preparedScss.match(selectorRegExp)[0];
 }
 
 function getRegExp() {
-  const regExp = {
-    selector: '\\S&?[\\w-,.:\\s()]*',
-    property: '[\\w-:\\s;\'"%()]*'
-  };
-
-  const aaa = `(&[\\w-,.:\\s()]*{?[\\w-:\\s;'"%()]*}\\s*)*`;
-  return RegExp(`${regExp.selector}{${regExp.property}${getDeepProperty(3)}}`, 'ig');
-  // return RegExp(`\\S${getDeepProperty(5)}`);
+  return RegExp(`\\S(&?${scssRegExps.selector})*{${scssRegExps.property}${getDeepPropertyRegExp(selectDeep)}}`, 'ig');
 }
 
-function getDeepProperty(deep) {
-  
-  const regExp = {
-    selector: '&[\\w-,.:\\s()]*',
-    property: '[\\w-:\\s;\'"%()]*'
-  };
-  if (deep <= 1) {
-    return `(${regExp.selector}{?${regExp.property}}\\s*)*`
-  }
-  return `(&[\\w-,.:\\s()]*{?[\\w-:\\s;'"%()]*${getDeepProperty(deep - 1)}}\\s*)*`
+function getDeepPropertyRegExp(deep) {
+  return (deep <= 1)
+    ? `(&${scssRegExps.selector}{?${scssRegExps.property}}\\s*)*`
+    : `(&${scssRegExps.selector}{?${scssRegExps.property}${getDeepPropertyRegExp(deep - 1)}}\\s*)*`;
 }
 
-module.exports.transformFileToScssList = (fileName) => {
-  const fileContent = fs.readFileSync(fileName).toString();
-  return getScssList(fileContent);
-};
-
-
-// (?<selector>[.a-z\d-_,\s:]*)
-// (?<property>[a-z-]*\s*:\s*[\da-z'";]*)
-// (?<subselector>[.a-z\d\-_,\s:&]*)
-// (?<selector>[.a-z\d-_,\s:]*)(?<property>[a-z-]*\s*:\s*[\da-z'";]*)(?<subselector>[.a-z\d\-_,\s:&]*)
-
-// (?<selector>[.a-z\d-_,\s:]*){0}(?<property>[a-z-]*\s*:\s*[\da-z'";]*){0}(?<subselector>[.a-z\d\-_,\s:&]*){0}
-
-// (?<selector>[.a-z\d-_,\s:]*)(?<property>[a-z-\d'";\s:]*)(?<subselector>[.a-z\d\-_,\s:&]*)
-
-//(?<selector>[.a-z\d-_,\s:]*){\s*(?<property>[a-z\-]*\s*:\s*[a-z\d'"\-]*;\s*)*((?<subselector>[&.a-z\d\-_,\s:]*)*\s*\k<property>*})*
-
-// (?<selector>[.a-z\d-_,\s:]*)(?<startSelectorValue>[{\s]*)(?<property>[a-z\-]*\s*:\s*[a-z\d'"\-]*;\s*)*(?<endSelectorValue>[}\s]*)*((?<subselector>[&.a-z\d\-_,\s:]*)*\k<startSelectorValue>\k<property>\k<endSelectorValue>)*}*
-
-// ***BASE*** \S(?<selector>[&.a-z\d-_,:\s]*)*\s*{\s*(?<property>[a-z\-]*\s*:\s*[a-z\d'"\-]*;\s*)*}
-
-// [\w-,.:\s&]*{\s*[\w-:\s;]*[&\w-,.:\s]*{?[\w-:\s;]*[\s}]*
-
-// \S[\w-,.:\s()]*{[\w-:\s;]*(&[\w-,.:\s()]*{?[\w-:\s;]*}\s*)*}
-
-// \S[&\w-,.:\s()]*{[\w-:\s;'"%()]*(&[\w-,.:\s()]*{?[\w-:\s;'"%()]*(&[\w-,.:\s()]*{?[\w-:\s;'"%()]*(&[\w-,.:\s()]*{?[\w-:\s;'"%()]*}\s*)*}\s*)*}\s*)*}
-
+module.exports = {
+  setDeep: deep => {
+    selectDeep = deep;
+  },
+  transformFileToScssList: fileName => {
+    const fileContent = fs.readFileSync(fileName).toString();
+    console.log(fileName);
+    return getScssList(fileContent);
+  },
+}

@@ -32,5 +32,26 @@
   }
 }
 
+.vepp-list {
+  margin-top: 1px;
+  padding-top: 2px;
 
+  &__item {
+    position: relative;
+    margin-top: 1px;
+    padding-top: 2px;
+  
+    &_active {
+      color: red;      
+    
+      &_inactive {
+        color: gray;
 
+        &::before {
+          bottom: 0;
+          right: 0;
+        }
+      }
+    }
+  }
+}
