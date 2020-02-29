@@ -1,0 +1,19 @@
+.vepp-list {
+  margin-top: 1px;
+  padding-top: 2px;
+}
+
+.vepp-list__item {
+  position: relative;
+  margin-top: 1px;
+  padding-top: 2px;
+}
+
+.vepp-list__item_active {
+  color: red;
+}
+
+.vepp-list__item_inactive {
+  color: gray;
+}
+  
