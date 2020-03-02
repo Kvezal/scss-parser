@@ -43,14 +43,14 @@
   
     &_active {
       color: red;      
-    
-      &_inactive {
-        color: gray;
+    }
 
-        &::before {
-          bottom: 0;
-          right: 0;
-        }
+    &_inactive {
+      color: gray;
+
+      &::before {
+        bottom: 0;
+        right: 0;
       }
     }
   }

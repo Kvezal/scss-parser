@@ -1,8 +1,9 @@
-const params = require('./params');
-const parser = require('./parser');
 const fs = require('fs');
 
-parser.setDeep(params.deep);
+const params = require('./input-params');
+const parser = require('./parser');
+
+
 const scssList = parser.transformFileToScssList(params.filePathList);
 
 // scssList.forEach(scss => {
@@ -10,3 +11,5 @@ const scssList = parser.transformFileToScssList(params.filePathList);
 // })
 
 fs.writeFileSync('output.json', JSON.stringify(scssList));
+// fs.writeFileSync('output.json', scssList);
+
