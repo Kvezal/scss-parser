@@ -1,10 +1,10 @@
 const fs = require('fs');
 
-const params = require('./input-params');
+const inputParams = require('./input-params');
 const parser = require('./parser');
 
 
-const scssList = parser.transformFileToScssList(params.filePathList);
+const scssList = parser.transformFileToScssList(inputParams.filePathList);
 
 // scssList.forEach(scss => {
 //     fs.writeFileSync(`scss/${scss.fileName}.scss`, scss.fileContent);

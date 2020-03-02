@@ -11,7 +11,7 @@ const getFlagValue = (flagNameList, defaultValue = null) => {
     }
   }
   return defaultValue;
-}
+};
 
 const flagValues = {
   prefix: getFlagValue(['--prefix', '-p']),
