@@ -1,0 +1,57 @@
+.vepp-list {
+  margin-top: 1px;
+  padding-top: 2px;
+
+  &__item {
+    position: relative;
+    margin-top: 1px;
+    padding-top: 2px;
+  
+    &::after {
+      content: '';
+      position: absolute;
+    }
+  
+    &::after {
+      top: 0;
+      left: 0;
+    }
+  
+    &::before {
+      bottom: 0;
+      right: 0;
+    }
+  
+    &_active {
+      color: red;
+    }
+    
+    &_inactive {
+      color: gray;
+    }
+  }
+}
+
+.vepp-list {
+  margin-top: 1px;
+  padding-top: 2px;
+
+  &__item {
+    position: relative;
+    margin-top: 1px;
+    padding-top: 2px;
+  
+    &_active {
+      color: red;      
+    }
+
+    &_inactive {
+      color: gray;
+
+      &::before {
+        bottom: 0;
+        right: 0;
+      }
+    }
+  }
+}
