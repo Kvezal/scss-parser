@@ -18,7 +18,7 @@ const flagValues = {
   elementSeporator: getFlagValue(['--elementSeporator', '-e'], '__'),
   modifierSeporator: getFlagValue(['--modifierSeporator', '-m'], '_'),
   filePathList: getFlagValue(['--file', '-f']),
-  deep: Number(getFlagValue(['--deep', '-d'])) || 5,
+  deep: Number(getFlagValue(['--deep', '-d'])) || 10,
 };
 
 module.exports = flagValues;
