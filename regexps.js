@@ -22,11 +22,13 @@ const BASE_PARSER = function getDeepBaseParserRegExp(deep) {
 }(inputParams.deep);
 
 const PARIFICATION_PARSER = function getDeepParificationParser(deep) {
-  if (deep > 1) {
+  if (deep === inputParams.deep) {
+    return RegExp(`(${CHILD_SELECTOR}{${PROPERTY}${getDeepParificationParser(deep - 1)}})`, 'ig');
+  } else if (deep > 1) {
     return `(${CHILD_SELECTOR}{${PROPERTY}${getDeepParificationParser(deep - 1)}}\\s*)*`;
   }
   return `(${CHILD_SELECTOR}{${PROPERTY}}\\s*)*`;
-}
+}(inputParams.deep);
 
 module.exports = {
   SELECTOR_BASE,
@@ -35,6 +37,7 @@ module.exports = {
   PROPERTY,
   selectorType,
   BASE_PARSER,
+  PARIFICATION_PARSER,
 };
 
 

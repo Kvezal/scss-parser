@@ -4,40 +4,34 @@ const params = require('./params');
 const scssRegExps = require('./regexps');
 
 
-function getScssList(fileContent, parent = null) {
+function getScssList(fileContent, parent = null, level = 0) {
   const scssListMatches = fileContent.match(scssRegExps.BASE_PARSER);
   if (scssListMatches === null) {
     return null;
   }
-  const scssList = scssListMatches.map(scss => {
-    const value = getScssParams(scss, parent);
-    if (scss.search('&') !== -1) {
-      // const content = getContent(scss, value.selector);
-      // let content = value.fileContent.replace(value.fileName, '');
-      // content = content.slice(1, content.length - 1).trim().replace('^;', '');
-      value.children = getScssList(value.content, value);
-    }
-    return value;
-  });
-  return scssList;
+  return scssListMatches.map(scss => getScssParams(scss, parent, level));
 }
 
-function getScssParams(scss, parent = null) {
+function getScssParams(scss, parentSelector = null, level = 0) {
   let selector = getSelector(scss);
   const type = getSelectorType(selector);
-  const selectorWithoutAmpersand = parent ? replaceAmpersand(selector, parent.selector) : selector;
-  const fileName = getFileName(selectorWithoutAmpersand);
+  const selectorWithoutAmpersand = parentSelector ? replaceAmpersand(selector, parentSelector) : selector;
   const isNotPseudo = type !== params.selectorType.PSEUDO;
+  const fileName = isNotPseudo ? getFileName(selectorWithoutAmpersand) : null;
   selector = isNotPseudo ? selectorWithoutAmpersand : selector;
   const dir = isNotPseudo ? getDirName(selector, type) : null;
+  const preferedScssForDeepContent = parentSelector ? scss.replace('&', parentSelector) : scss;
+  const deepContent = getDeepContent(preferedScssForDeepContent);
+  const currentLevel = parentSelector && isNotPseudo ? level + 1 : level;
+  const children = deepContent !== null ? deepContent.map(item => getScssList(item, selectorWithoutAmpersand, currentLevel)) : null;
   return {
-      selector,
-      fileName,
-      dir,
-      type,
-      fileContent: scss,
-      children: null,
-      content: getContent(scss, selector),
+    level: currentLevel,
+    selector,
+    fileName,
+    dir,
+    type,
+    propertyList: getPropertyList(preferedScssForDeepContent, selectorWithoutAmpersand),
+    children,
   }
 }
 
@@ -81,9 +75,21 @@ function getDirName(selector, selectorType) {
   return dirNameMap.get(selectorType)();
 }
 
-function getContent(scss, selector) {
-  const content = scss.replace(selector, '');
-  return content.slice(1, content.length - 1).trim().replace('^;', '');
+function getPropertyList(scss, selector) {
+  let content = scss.replace(scssRegExps.PARIFICATION_PARSER, '');
+  content = content.replace(selector, '');
+  const propertyString = content.replace(/[{}\s]*/ig, '');
+  return propertyString.split(';').reduce((propertyList, item) => {
+    if (item !== '') {
+      const value = item.split(':');
+      propertyList.push({property: value[0], value: value[1]});
+    }
+    return propertyList;
+  }, []);
+}
+
+function getDeepContent(scss) {
+  return scss.match(scssRegExps.PARIFICATION_PARSER);
 }
 
 module.exports.transformFileToScssList = fileName => {
